@@ -28,6 +28,7 @@ async function getPosts() {
     querySnap.forEach(async (doc) => {
        let data = doc.data();
       data.id = doc.id;
+      console.log(data)
       const commentRef = collection(db, "posts", doc.id, "comments");
       const queryComment = await getDocs(query(commentRef));
       console.log(queryComment)
