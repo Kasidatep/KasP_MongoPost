@@ -1,20 +1,25 @@
 <script setup>
 import { ref, onMounted, watch } from 'vue'
 import { useRoute } from "vue-router"
-import { collection, query, where, getDocs, onSnapshot } from "firebase/firestore"
+import { collection, query, where, getDocs, onSnapshot, doc, getDoc } from "firebase/firestore"
 import db from "../firebase/init.js"
 import PostItem from "../components/PostItem.vue"
 import CreatePostVue from '../components/CreatePost.vue'
-const user = ref("")
+const username = ref("")
+const user = ref(null)
 const posts = ref([])
 const route = useRoute()
 const count = ref(0)
 
 async function getPosts() {
+  username.value = route.params.user
+  user.value = undefined
+  const u = await getDoc(doc(db, "users", username.value))
+  user.value = u.data()
+
   posts.value = []
-  user.value = route.params.user
   const postRef = collection(db, "posts");
-  const qry = query(postRef, where("user", "==", user.value));
+  const qry = query(postRef, where("user", "==", username.value));
   const unsubscribe = onSnapshot(qry, (querySnap) => {
     posts.value = []
     count.value = 0      
@@ -52,7 +57,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <h3>Posts : {{ user }} <span class="brd">{{ count }} post</span> </h3>
+  <h3>Posts : {{ user?.firstname }} {{ user?.lastname }} <span class="brd">{{ count }} post</span> </h3>
   <CreatePostVue :user="user" />
   <PostItem v-for="post in posts" :post="post" :key="post.id" @add="add" />
 </template>
